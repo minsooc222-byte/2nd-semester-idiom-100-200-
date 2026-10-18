@@ -43,8 +43,11 @@ body.keyboard-open #quiz .row{margin-top:6px!important}
 #quiz.answered .answerSide{border-left:1px solid var(--line);padding-left:14px}
 #detail{margin-top:12px;margin-bottom:12px;scroll-margin-top:12px}
 @media(max-width:599px){#quiz.answered .quizLayout{grid-template-columns:minmax(0,1fr)}#quiz.answered .answerSide{border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:10px}}
-body.keyboard-open #quiz.answered .answerSide{max-height:calc(var(--visual-height, 100dvh) - 165px);overflow-y:auto;overscroll-behavior:contain}
-body.keyboard-open #quiz.answered .feedback{font-size:14px;line-height:1.45}
+/* 키보드가 떠도 정답 해설을 내부 박스에서 자르지 않고 페이지가 자연스럽게 스크롤되게 함 */
+body.keyboard-open #quiz.answered .quizLayout{grid-template-columns:minmax(0,1fr);gap:8px}
+body.keyboard-open #quiz.answered .answerSide{max-height:none;overflow:visible;border-left:0;border-top:1px solid var(--line);padding:8px 0 0}
+body.keyboard-open #quiz.answered .feedback{font-size:15px;line-height:1.6;overflow:visible;max-height:none;white-space:normal;overflow-wrap:anywhere}
+#feedback, .feedback, .textbookDetail, .inlineDetail{height:auto;max-height:none;overflow:visible;overflow-wrap:anywhere}
 
 .textbookForm{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.textbookForm label{display:block;font-size:13px;color:var(--muted);font-weight:700}.textbookForm input,.textbookForm textarea,.textbookForm select{display:block;width:100%;margin-top:5px;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;color:var(--ink);font:inherit}.textbookForm textarea{min-height:72px;resize:vertical}.textbookForm .wide{grid-column:1/-1}.textbookList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}.textbookItem{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px;text-align:left}.textbookItem b{display:block}.textbookItem small{display:block;color:var(--muted);margin-top:4px}.textbookActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.batchButtons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}.inlineDetail{grid-column:1/-1}.textbookCard{min-width:0}.textbookDetail{background:#f7f9fc;border-radius:12px;padding:12px;line-height:1.7;margin-top:7px}.textbookDetail button{margin:8px 5px 0 0}
 @media(max-width:599px){.textbookForm{grid-template-columns:1fr}.textbookForm .wide{grid-column:auto}.textbookList{grid-template-columns:1fr}.batchButtons{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -126,7 +129,7 @@ function selectedIdioms(){return idioms.filter(x=>selected.has(Math.floor((x.id-
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function buildQuestions(){let q=selectedIdioms().map(x=>({idiom:x,prompt:mode==='hanzi'?x.hanzi:x.meaning,answer:x.name}));if($('count').value!=='all')q=q.slice(0,Number($('count').value));return shuffle(q)}
 function startQuiz(qOverride=null,title=''){questions=qOverride||buildQuestions();if(!questions.length){alert('문제 범위를 하나 이상 선택해 주세요.');return}idx=0;records=questions.map(q=>({input:'',checked:false,correct:false,wrongCounted:false}));reviewOnly=!!qOverride;quizTitle=title;$('setup').classList.add('hidden');$('results').classList.add('hidden');$('quiz').classList.remove('hidden');$('homeBtn').classList.remove('hidden');renderQuestion()}
-function renderQuestion(){const q=questions[idx],r=records[idx];$('modeName').textContent=quizTitle||(reviewOnly?'오답 + 즐겨찾기 복습':(mode==='hanzi'?'한자 보고 답 쓰기':'뜻음/의미 보고 답 쓰기'));$('counter').textContent=`${idx+1} / ${questions.length}`;$('progress').style.width=((idx+1)/questions.length*100)+'%';$('prompt').textContent=q.prompt;$('prompt').className='prompt'+(mode==='hanzi'?' hanzi':'');$('hint').textContent=q.type==='single'?(mode==='hanzi'?'한자를 보고 뜻과 음(예: 밝을 명)을 입력하세요.':'뜻음(예: 밝을 명)을 보고 한자를 입력하세요.'):(mode==='hanzi'?'한자를 보고 한글 음을 입력하세요.':'의미를 보고 해당 단어의 음을 입력하세요.');$('answer').value=r.input;$('answer').disabled=false;$('quiz').classList.toggle('answered',r.checked);$('feedback').className='feedback hidden';$('feedback').textContent='';$('back').disabled=idx===0;$('checkNext').textContent=r.checked?(idx===questions.length-1?'결과 보기':'다음 문제'):'정답 확인';if(r.checked)showFeedback();}
+function renderQuestion(){const q=questions[idx],r=records[idx];$('modeName').textContent=quizTitle||(reviewOnly?'오답 + 즐겨찾기 복습':(mode==='hanzi'?'한자 보고 답 쓰기':'뜻음/의미 보고 답 쓰기'));$('counter').textContent=`${idx+1} / ${questions.length}`;$('progress').style.width=((idx+1)/questions.length*100)+'%';$('prompt').textContent=q.prompt;$('prompt').className='prompt'+(mode==='hanzi'?' hanzi':'');$('hint').textContent=q.type==='single'?(mode==='hanzi'?'한자를 보고 뜻과 음(예: 밝을 명)을 입력하세요.':'뜻음(예: 밝을 명)을 보고 한자를 입력하세요.'):(mode==='hanzi'?'한자를 보고 한글 음을 입력하세요.':'의미를 보고 해당 단어의 음을 입력하세요.');$('answer').value=r.input;$('answer').disabled=false;$('quiz').classList.toggle('answered',r.checked);$('feedback').className='feedback hidden';$('feedback').textContent='';$('back').disabled=idx===0;$('checkNext').textContent=r.checked?(idx===questions.length-1?'결과 보기':'다음 문제'):'정답 확인';if(r.checked){showFeedback();if(document.body.classList.contains('keyboard-open')){requestAnimationFrame(()=>document.getElementById('feedback').scrollIntoView({behavior:'smooth',block:'nearest'}));}}}
 function normalize(s){return String(s||'').replace(/[\s·ㆍ]/g,'').trim()}
 function showFeedback(){const q=questions[idx],r=records[idx];$('feedback').className='feedback '+(r.correct?'good':'bad');$('feedback').innerHTML=`<b>${r.correct?'정답입니다!':'오답입니다.'}</b><br>정답: ${esc(q.answer)}<br><div style="font-size:14px;margin-top:5px"><b>${q.type==='single'?'뜻음':'글자별 음과 뜻'}:</b> ${esc(q.idiom.charMeaning)}</div><div style="margin-top:5px"><b>전체 의미:</b> ${esc(q.idiom.meaning)}</div>`}
 function check(){const q=questions[idx],r=records[idx];if(r.checked){if(idx<questions.length-1){idx++;renderQuestion()}else showResults();return}r.input=$('answer').value;r.checked=true;r.correct=normalize(r.input)===normalize(q.idiom.name);stats.totalAnswered=(stats.totalAnswered||0)+1;if(r.correct){stats.totalCorrect=(stats.totalCorrect||0)+1}else{stats.wrongCounts[q.idiom.id]=(stats.wrongCounts[q.idiom.id]||0)+1;r.wrongCounted=true}saveStats();renderQuestion();if(window.visualViewport){requestAnimationFrame(()=>{const side=document.querySelector('.answerSide');if(side)side.scrollTop=0;})}}
@@ -148,18 +151,25 @@ $('combinedAllQuiz').onclick=()=>{const base=idioms.map(x=>({idiom:x,type:'idiom
 $('allRanges').onclick=()=>{selected=new Set(Array.from({length:Math.ceil(idioms.length/10)},(_,i)=>i));renderRanges()};$('clearRanges').onclick=()=>{selected.clear();renderRanges()};document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll('.mode').forEach(x=>x.classList.toggle('on',x===b))});$('start').onclick=()=>startQuiz();$('redoWrong').onclick=()=>{const qs=buildReviewQuestions();if(!qs.length){alert('선택한 범위에 오답 기록이 없고 즐겨찾기도 없습니다.');return}startQuiz(qs)};$('checkNext').onclick=check;$('back').onclick=back;$('answer').addEventListener('input',()=>{if(!records[idx].checked){records[idx].input=$('answer').value}else{$('answer').value=records[idx].input}});
 $('answer').addEventListener('beforeinput',e=>{if(records[idx]?.checked)e.preventDefault()});
 $('answer').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();check()}else if(records[idx]?.checked && !['Tab','Escape','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key)){e.preventDefault()}});
-/* iOS/iPadOS: visualViewport를 이용해 소프트 키보드 표시 상태를 감지 */
+/* iPad/iPhone: 키보드 높이에 맞춰 레이아웃을 바꾸고 입력창을 자동으로 보이게 함 */
 function updateKeyboardLayout(){
   const vv=window.visualViewport;
-  const open=!!vv && (window.innerHeight-vv.height)>140;
+  const open=!!vv && (window.innerHeight-vv.height)>100;
   document.body.classList.toggle('keyboard-open',open);
   if(vv) document.documentElement.style.setProperty('--visual-height',vv.height+'px');
 }
+function keepAnswerVisible(behavior='smooth'){
+  const answer=$('answer');
+  if(!$('quiz').classList.contains('hidden') && document.activeElement===answer){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>answer.scrollIntoView({behavior,block:'center',inline:'nearest'})));
+  }
+}
 if(window.visualViewport){
-  window.visualViewport.addEventListener('resize',updateKeyboardLayout);
+  window.visualViewport.addEventListener('resize',()=>{updateKeyboardLayout();keepAnswerVisible('auto');});
   window.visualViewport.addEventListener('scroll',updateKeyboardLayout);
 }
-window.addEventListener('resize',updateKeyboardLayout);
+window.addEventListener('resize',()=>{updateKeyboardLayout();keepAnswerVisible('auto');});
+$('answer').addEventListener('focus',()=>{updateKeyboardLayout();setTimeout(()=>keepAnswerVisible('smooth'),180);setTimeout(()=>keepAnswerVisible('auto'),450);});
 updateKeyboardLayout();$('skip').onclick=()=>{if(!records[idx].checked){alert('먼저 정답을 확인해 주세요.');return}check()};$('endQuiz').onclick=showResults;$('toSetup').onclick=goSetup;$('redoResult').onclick=()=>{if(lastWrong.length)startQuiz(shuffle(lastWrong.map(x=>({idiom:x.idiom,prompt:mode==='hanzi'?x.idiom.hanzi:x.idiom.meaning,answer:x.idiom.name}))))};$('homeBtn').onclick=goSetup;$('search').addEventListener('input',renderList);$('clearSearch').onclick=()=>{$('search').value='';renderList()};document.querySelectorAll('.listView').forEach(b=>b.onclick=()=>{listView=b.dataset.view;renderList()});$('export').onclick=exportBackup;$('importBtn').onclick=()=>$('importFile').click();$('importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await f.text());if(!j.stats||!j.stats.wrongCounts)throw new Error('invalid');mergeBackup(j.stats);if(Array.isArray(j.textbookEntries)){const seen=new Set(textbookEntries.map(x=>x.id));j.textbookEntries.forEach(x=>{if(x&&x.id&&!seen.has(x.id)){textbookEntries.push(x);seen.add(x.id)}});saveTextbookEntries();renderTextbookList();alert('교과서 한자 목록도 복원했습니다.')}}catch(err){alert('백업 파일을 읽을 수 없습니다. 고사성어 퀴즈 백업 JSON 파일인지 확인해 주세요.')}e.target.value=''};$('resetStats').onclick=()=>{if(confirm('누적 오답 기록과 전체 풀이 기록을 모두 초기화할까요? 이 작업은 되돌릴 수 없습니다.')){stats={wrongCounts:{},favorites:stats.favorites||[],totalQuizzes:0,totalAnswered:0,totalCorrect:0};saveStats();renderList()}};
 loadStats();loadTextbookEntries();updateTextbookForm();renderRanges();renderList();renderTextbookList();
 </script></body></html>
